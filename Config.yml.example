@@ -1,0 +1,65 @@
+
+# Code bahaviour parameters
+
+
+# Folder in which the script runs, relative to this repository.
+WorkingDirectory: .
+# Log folder, relative to this repository.
+LogsDirectory: Logs
+
+
+# SQL output locations
+
+
+# Email notification system FKNotificationID
+# TODO: 78 is copied from the template default (likely Simon's own test ID) -
+# confirm the correct FKNotificationID for corridor-care/container-bay
+# failure alerts before this runs unattended.
+FKNotificationID: 78
+
+
+# Secure variables - !!! Must be removed before sharing publicly !!!
+# These four are the shared template's own keys (error-notification system
+# server/databases) - DO NOT repurpose these for our own source/target
+# servers below, they're used by Tools/Utilities.py's MakeEnd() for the
+# trust-wide error email system, independent of our own data servers.
+SqlServerName: '<SQL_SERVER_NAME>'
+HomeDatabase: '<HOME_DATABASE>'
+EmailSystemDatabase: '<EMAIL_SYSTEM_DATABASE>'
+ReferenceDatabase: '<REFERENCE_DATABASE>'
+
+
+# ----------------------------------------------------------------------------
+# Container Bay XML Loader - our own settings (not part of the shared template)
+# ----------------------------------------------------------------------------
+
+# Source: where CaMIS data lives. CAM_LIVE_ODBC is a LINKED SERVER on this
+# instance, referenced via 4-part naming inside the query - the database
+# connected to here doesn't matter for the source query itself.
+CamisSourceServer: '<SOURCE_SERVER>'
+
+# Target: where the parsed container/bay table gets written
+CamisTargetServer: '<TARGET_SERVER>'
+CamisTargetDatabase: 'Production_CaMISStaging'
+CamisTargetSchema: 'xml'
+CamisTargetTable: 'container_bay_xml'
+
+# True: pull every ward code with a WardLayout document in CaMIS each run
+# (Option A - full refresh). False: not currently supported by
+# AutomaticRun.py (no manual ward list wired in for the scheduled path -
+# see notebooks/load_container_bay_xml.ipynb if you need to target
+# specific wards for troubleshooting).
+CamisAutoDiscoverAllWards: true
+
+# Experimental/unverified - see Tools/CamisXmlLoader.py's build_query_openquery()
+# docstring. Leave False unless specifically testing the OPENQUERY path.
+CamisUseOpenquery: false
+
+# Data-loss guard: refuse to overwrite the target table if the new pull's
+# row count is below this fraction of what's already there (protects
+# against a partial/failed run silently wiping out good data).
+CamisMinRowCountRatio: 0.7
+
+# Set true only when a large row-count drop is genuinely expected (e.g.
+# wards were decommissioned in CaMIS) - bypasses the guard above.
+CamisForceOverwrite: false
